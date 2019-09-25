@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 iris = np.loadtxt("iris.txt")
 
@@ -64,11 +66,9 @@ class HardParzen:
     def predict_vector(self, vector):
         distances = minkowski_mat(vector, self.train_inputs)
 
-        radius = self.h
-        neighbours_indices = np.array([])
-        while len(neighbours_indices) == 0: # TODO pas de voisin?? comment est-ce possible si radius grandit??
-            neighbours_indices = np.where(distances < radius)[0]
-            radius *= 2
+        neighbours_indices = np.where(distances < self.h)[0]
+        if len(neighbours_indices) == 0:
+            return draw_rand_label(vector, self.label_list)
 
         count_dict = list_dict(self.label_list)
         for i in neighbours_indices:
@@ -82,14 +82,36 @@ class HardParzen:
 
 class SoftRBFParzen:
     def __init__(self, sigma):
-        self.sigma  = sigma
+        self.sigma = sigma
 
     def train(self, train_inputs, train_labels):
-        # self.label_list = np.unique(train_labels)
-        pass
+        self.train_inputs = train_inputs
+
+        nb_of_labels = len(np.unique(train_labels))
+        def get_one_hot(label):
+            empty = [0 for i in range(nb_of_labels)]
+            empty[int(label) - 1] = 1
+
+            return np.array(empty)
+
+        self.one_hot_train_labels = np.array([get_one_hot(label) for label in train_labels])
+
+    def rbf(self, distance):
+        d = len(self.train_inputs[0])
+
+        bot = ((2*math.pi) ** d/2) * (self.sigma ** d)
+        top = math.e ** ((-1/2) * ((distance ** 2) / (self.sigma ** 2)))
+        return top/bot
+
+    def predict_vector(self, vector):
+        distances = minkowski_mat(vector, self.train_inputs)
+
+        rbfs = np.array([self.rbf(distances[i])*self.one_hot_train_labels[i] for i in range(len(distances))])
+
+        return np.argmax(sum(rbfs))+1   # doit ajouter 1 car index partent de 0
 
     def compute_predictions(self, test_data):
-        pass
+        return np.array([self.predict_vector(v) for v in test_data])
 
 
 def split_dataset(iris):
@@ -127,3 +149,7 @@ print(q1.feature_means_class_1(iris))
 hp = HardParzen(4)
 hp.train(strip_labels(iris), iris[:,-1])
 print(hp.compute_predictions(strip_labels(iris)))
+
+sp = SoftRBFParzen(2)
+sp.train(strip_labels(iris), iris[:,-1])
+print(sp.compute_predictions(strip_labels(iris)))
