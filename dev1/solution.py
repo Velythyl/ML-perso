@@ -66,7 +66,7 @@ class HardParzen:
 
         radius = self.h
         neighbours_indices = np.array([])
-        while len(neighbours_indices) == 0:
+        while len(neighbours_indices) == 0: # TODO pas de voisin?? comment est-ce possible si radius grandit??
             neighbours_indices = np.where(distances < radius)[0]
             radius *= 2
 
