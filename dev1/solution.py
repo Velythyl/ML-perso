@@ -1,4 +1,5 @@
 import math
+import matplotlib.pyplot as plt
 
 import numpy as np
 iris = np.loadtxt("iris.txt")
@@ -115,7 +116,24 @@ class SoftRBFParzen:
 
 
 def split_dataset(iris):
-    pass
+    train_set = []
+    validation_set = []
+    test_set = []
+
+    for i in range(len(iris)):
+        mod = i % 5
+        ele = iris[i]
+
+        if mod == 3:
+            validation_set.append(ele)
+        elif mod == 4:
+            test_set.append(ele)
+        else:
+            train_set.append(ele)
+
+
+    return (np.array(train_set), np.array(validation_set), np.array(test_set))
+
 
 
 class ErrorRate:
@@ -125,20 +143,65 @@ class ErrorRate:
         self.x_val = x_val
         self.y_val = y_val
 
+    def error_rate(self, p):
+        p.train(self.x_train, self.y_train)
+        pred = p.compute_predictions(self.x_val)
+
+        nb_bad = 0
+        for i in range(len(pred)):
+            nb_bad += int(int(pred[i]) != int(self.y_val[i]))
+
+        return nb_bad / len(pred)
+
     def hard_parzen(self, h):
-        pass
+        return self.error_rate(HardParzen(h))
 
     def soft_parzen(self, sigma):
-        pass
+        return self.error_rate(SoftRBFParzen(sigma))
 
+# Question 5
+def q5():
+    split = split_dataset(iris)
+    train = split[0]
+    valid = split[1]
+    test = split[2]
+
+    err = ErrorRate(strip_labels(train), train[:,-1], strip_labels(valid), valid[:,-1])
+
+    # Best = 1
+    h_list = [0.001, 0.01, 0.1, 0.3, 1.0, 3.0, 10.0, 15.0, 20.0]
+    vh_list = [err.hard_parzen(h) for h in h_list]
+    plt.plot(h_list, vh_list)
+    plt.ylabel("Error rate")
+    plt.xlabel("Value of h")
+    plt.show()
+
+    # Best = 0.3
+    s_list = [0.001, 0.01, 0.1, 0.3, 1.0, 3.0, 10.0, 15.0, 20.0]
+    vs_list = [err.soft_parzen(s) for s in s_list]
+    plt.plot(s_list, vs_list)
+    plt.ylabel("Error rate")
+    plt.xlabel("Value of s")
+    plt.show()
+
+    return np.array([h_list[np.argmin(vh_list)], s_list[np.argmin(vs_list)]])
 
 def get_test_errors(iris):
-    pass
+    split = split_dataset(iris)
+    train = split[0]
+    valid = split[1]
+    test = split[2]
 
+    err = ErrorRate(strip_labels(train), train[:,-1], strip_labels(test), test[:,-1])
+
+    hstar, sstar = q5()
+
+    return np.array([err.hard_parzen(hstar), err.soft_parzen(sstar)])
 
 def random_projections(X, A):
     pass
 
+q5()
 
 ### TESTS ###
 q1 = Q1()
@@ -146,10 +209,20 @@ print(q1.feature_means(iris))
 print(q1.covariance_matrix(iris))
 print(q1.feature_means_class_1(iris))
 
-hp = HardParzen(4)
+hp = HardParzen(2)
 hp.train(strip_labels(iris), iris[:,-1])
 print(hp.compute_predictions(strip_labels(iris)))
 
 sp = SoftRBFParzen(2)
 sp.train(strip_labels(iris), iris[:,-1])
 print(sp.compute_predictions(strip_labels(iris)))
+
+split = split_dataset(iris)
+train = split[0]
+test = split[1]
+
+err = ErrorRate(strip_labels(train), train[:,-1], strip_labels(test), test[:,-1])
+print(err.hard_parzen(2))
+print(err.soft_parzen(2))
+
+get_test_errors(iris)
