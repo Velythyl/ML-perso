@@ -160,7 +160,7 @@ class ErrorRate:
         return self.error_rate(SoftRBFParzen(sigma))
 
 # Question 5
-def q5():
+def q5(plot=False):
     split = split_dataset(iris)
     train = split[0]
     valid = split[1]
@@ -171,18 +171,20 @@ def q5():
     # Best = 1
     h_list = [0.001, 0.01, 0.1, 0.3, 1.0, 3.0, 10.0, 15.0, 20.0]
     vh_list = [err.hard_parzen(h) for h in h_list]
-    plt.plot(h_list, vh_list)
-    plt.ylabel("Error rate")
-    plt.xlabel("Value of h")
-    plt.show()
+    if plot:
+        plt.plot(h_list, vh_list)
+        plt.ylabel("Error rate")
+        plt.xlabel("Value of h")
+        plt.show()
 
     # Best = 0.3
     s_list = [0.001, 0.01, 0.1, 0.3, 1.0, 3.0, 10.0, 15.0, 20.0]
     vs_list = [err.soft_parzen(s) for s in s_list]
-    plt.plot(s_list, vs_list)
-    plt.ylabel("Error rate")
-    plt.xlabel("Value of s")
-    plt.show()
+    if plot:
+        plt.plot(s_list, vs_list)
+        plt.ylabel("Error rate")
+        plt.xlabel("Value of s")
+        plt.show()
 
     return np.array([h_list[np.argmin(vh_list)], s_list[np.argmin(vs_list)]])
 
@@ -201,7 +203,7 @@ def get_test_errors(iris):
 def random_projections(X, A):
     pass
 
-q5()
+q5(plot=True)
 
 ### TESTS ###
 q1 = Q1()
