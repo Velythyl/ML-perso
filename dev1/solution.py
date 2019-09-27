@@ -1,8 +1,6 @@
 import math
-import matplotlib.pyplot as plt
 
 import numpy as np
-iris = np.loadtxt("iris.txt")
 
 ######## DO NOT MODIFY THIS FUNCTION ########
 def draw_rand_label(x, label_list):
@@ -161,6 +159,11 @@ class ErrorRate:
 
 # Question 5
 def q5(plot=False):
+    iris = np.loadtxt("iris.txt")
+
+    if plot:
+        import matplotlib.pyplot as plt
+
     split = split_dataset(iris)
     train = split[0]
     valid = split[1]
@@ -209,29 +212,3 @@ def get_test_errors(iris):
 
 def random_projections(X, A):
     pass
-
-q5(plot=True)
-
-### TESTS ###
-q1 = Q1()
-print(q1.feature_means(iris))
-print(q1.covariance_matrix(iris))
-print(q1.feature_means_class_1(iris))
-
-hp = HardParzen(2)
-hp.train(strip_labels(iris), iris[:,-1])
-print(hp.compute_predictions(strip_labels(iris)))
-
-sp = SoftRBFParzen(2)
-sp.train(strip_labels(iris), iris[:,-1])
-print(sp.compute_predictions(strip_labels(iris)))
-
-split = split_dataset(iris)
-train = split[0]
-test = split[1]
-
-err = ErrorRate(strip_labels(train), train[:,-1], strip_labels(test), test[:,-1])
-print(err.hard_parzen(2))
-print(err.soft_parzen(2))
-
-get_test_errors(iris)
