@@ -39,20 +39,20 @@ def max_key(dictionary):
 class Q1:
 
     # Retourne les lignes du dataset dont le label est 1
-    def only_keep_label1(self, iris):
+    def only_keep_label_1(self, iris):
         return iris[np.where(iris[:,4] == 1)]
 
     def feature_means(self, iris):
         return np.mean(strip_labels(iris), axis=0)
 
     def covariance_matrix(self, iris):
-        return np.cov(iris) # TODO
+        return np.cov(strip_labels(iris), rowvar=False) # TODO
 
     def feature_means_class_1(self, iris):
-        return self.feature_means(self.only_keep_label1(iris))
+        return self.feature_means(self.only_keep_label_1(iris))
 
     def covariance_matrix_class_1(self, iris):
-        pass
+        return self.covariance_matrix(self.only_keep_label_1(iris))
 
 class HardParzen:
     def __init__(self, h):
@@ -109,7 +109,7 @@ class SoftRBFParzen:
 
         rbfs = np.array([self.rbf(distances[i])*self.one_hot_train_labels[i] for i in range(len(distances))])
 
-        return np.argmax(sum(rbfs))+1   # doit ajouter 1 car index partent de 0
+        return np.argmax(np.sum(rbfs, axis=0))+1   # doit ajouter 1 car index partent de 0
 
     def compute_predictions(self, test_data):
         return np.array([self.predict_vector(v) for v in test_data])
@@ -168,22 +168,29 @@ def q5(plot=False):
 
     err = ErrorRate(strip_labels(train), train[:,-1], strip_labels(valid), valid[:,-1])
 
+    def str_cap(n):
+        return str(n)[:3]
+
+    def annotate(x, y, color):
+        for a,b in zip(x, y):
+            plt.text(a, b, "    ("+str_cap(a)+", "+str_cap(b)+")", color=color)
+
     # Best = 1
     h_list = [0.001, 0.01, 0.1, 0.3, 1.0, 3.0, 10.0, 15.0, 20.0]
     vh_list = [err.hard_parzen(h) for h in h_list]
     if plot:
-        plt.plot(h_list, vh_list)
-        plt.ylabel("Error rate")
-        plt.xlabel("Value of h")
-        plt.show()
+        plt.plot(h_list, vh_list, label="Hard Parzen", marker=".", color="b")
+        annotate(h_list, vh_list, "b")
 
     # Best = 0.3
     s_list = [0.001, 0.01, 0.1, 0.3, 1.0, 3.0, 10.0, 15.0, 20.0]
     vs_list = [err.soft_parzen(s) for s in s_list]
     if plot:
-        plt.plot(s_list, vs_list)
+        plt.plot(s_list, vs_list, label="Soft Parzen", marker="v", color="g")
+        annotate(s_list, vs_list, "g")
         plt.ylabel("Error rate")
-        plt.xlabel("Value of s")
+        plt.xlabel("Value of σ and h")
+        plt.legend()
         plt.show()
 
     return np.array([h_list[np.argmin(vh_list)], s_list[np.argmin(vs_list)]])

@@ -38,7 +38,7 @@ plotit(x1, y1, x2, y2)
 moy1 = np.array([np.sum(x1), np.sum(y1)]) / len(x1)
 moy2 = np.array([np.sum(x2), np.sum(y2)]) / len(x2)
 
-print(moy1, moy2)
+print(moy1, moy2)   #[ 5. -4.] [3.33333333 6.66666667]
 
 # on ne peut pas utiliser plotit: Qhull n'aime pas lorsqu'on a moins que 4 points a evaluer!
 # Donc, on prend les points donnes par print et on les met sur http://alexbeutel.com/webgl/voronoi.html
@@ -55,4 +55,4 @@ plotit(x1, y1, x2, y2, x3, y3)
 
 moy3 = np.array([np.sum(x3), np.sum(y3)]) / len(x3)
 
-print(moy1, moy2, moy3)
+print(moy1, moy2, moy3) #[ 5. -4.] [3.33333333 6.66666667] [2.33333333 2.        ]
