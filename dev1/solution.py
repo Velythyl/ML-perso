@@ -1,3 +1,5 @@
+# Charlie Gauthier 20105623
+
 import math
 
 import numpy as np
@@ -17,6 +19,9 @@ def draw_rand_label(x, label_list):
 # Retourne la matrice en parametre sans sa derniere colone (pour iris, sans les labels)
 def strip_labels(iris):
     return iris[:,:-1]
+
+def just_labels(iris):
+    return iris[:,-1]
 
 # Pris de la solution de la demo 2
 def minkowski_mat(x, Y, p=2):
@@ -158,9 +163,7 @@ class ErrorRate:
         return self.error_rate(SoftRBFParzen(sigma))
 
 # Question 5
-def q5(plot=False):
-    iris = np.loadtxt("iris.txt")
-
+def q5(iris, plot=False):
     if plot:
         import matplotlib.pyplot as plt
 
@@ -206,9 +209,62 @@ def get_test_errors(iris):
 
     err = ErrorRate(strip_labels(train), train[:,-1], strip_labels(test), test[:,-1])
 
-    hstar, sstar = q5()
+    hstar, sstar = q5(iris)
 
     return np.array([err.hard_parzen(hstar), err.soft_parzen(sstar)])
 
 def random_projections(X, A):
-    pass
+    # X est la patante a projeter, A est le truc binouche qu'on projete dessus
+    return np.array([(1/math.sqrt(2)) * np.transpose(A).dot(vector) for vector in X])
+
+# Question 5
+def q9():
+    iris = np.loadtxt("iris.txt")
+
+    import matplotlib.pyplot as plt
+
+    split = split_dataset(iris)
+    train = split[0]
+    valid = split[1]
+    test = split[2]
+
+    result_store_h = np.zeros((500,9))
+    result_store_s = np.zeros((500,9))
+
+    values = [0.001, 0.01, 0.1, 0.3, 1.0, 3.0, 10.0, 15.0, 20.0]
+
+    for i in range(500):
+        A = np.random.normal(0,1, (4,2))
+        train_p = random_projections(strip_labels(train), A)
+        valid_p = random_projections(strip_labels(valid), A)
+
+        err = ErrorRate(train_p, just_labels(train), valid_p, just_labels(valid))
+
+        print(i)
+
+        for index in range(len(values)):
+            value = values[index]
+            result_store_h[i][index] = err.hard_parzen(value)
+            result_store_s[i][index] = err.soft_parzen(value)
+
+    h_means = np.mean(result_store_h, axis=0)
+    s_means = np.mean(result_store_s, axis=0)
+
+    h_stds = 0.2 * np.std(result_store_h, axis=0)
+    s_stds = 0.2 * np.std(result_store_s, axis=0)
+
+    print(h_stds)
+
+    # http://benalexkeen.com/bar-charts-in-matplotlib/
+
+    ind = np.arange(len(values))
+    width = 0.35
+    plt.bar(ind, h_means, width, label='Hard Parzen', yerr=h_stds)
+    plt.bar(ind + width, s_means, width, label='Soft Parzen', yerr=s_stds)
+
+    plt.ylabel('Error rate')
+    plt.xlabel('Value of h and s')
+
+    plt.xticks(ind + width / 2, tuple(values))
+    plt.legend(loc='best')
+    plt.show()
